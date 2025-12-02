@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import { ServiceBooking } from '../types';
+import { TRANSLATIONS } from '../constants';
 
-const Services: React.FC = () => {
+interface ServicesProps {
+    language: 'EN' | 'HI';
+}
+
+const Services: React.FC<ServicesProps> = ({ language }) => {
   const [activeService, setActiveService] = useState<'COOLIE' | 'WHEELCHAIR' | 'CLOAK'>('COOLIE');
   const [bookings, setBookings] = useState<ServiceBooking[]>([]);
   const [luggageWeight, setLuggageWeight] = useState(20);
+
+  const t = TRANSLATIONS[language].services;
 
   const handleBook = () => {
     const newBooking: ServiceBooking = {
@@ -20,8 +27,8 @@ const Services: React.FC = () => {
   return (
     <div className="p-4 md:p-0 space-y-6 h-full flex flex-col">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Station Services</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Book certified porters and assistance instantly.</p>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.title}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t.subtitle}</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6 flex-1">
@@ -32,17 +39,17 @@ const Services: React.FC = () => {
                 <button 
                     onClick={() => setActiveService('COOLIE')}
                     className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeService === 'COOLIE' ? 'bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>
-                    Coolie
+                    {t.coolie}
                 </button>
                 <button 
                     onClick={() => setActiveService('WHEELCHAIR')}
                     className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeService === 'WHEELCHAIR' ? 'bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>
-                    Wheelchair
+                    {t.wheelchair}
                 </button>
                 <button 
                     onClick={() => setActiveService('CLOAK')}
                     className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeService === 'CLOAK' ? 'bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>
-                    Cloak Room
+                    {t.cloak}
                 </button>
             </div>
 

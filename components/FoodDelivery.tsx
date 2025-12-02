@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
-import { RESTAURANTS } from '../constants';
+import { RESTAURANTS, TRANSLATIONS } from '../constants';
 import { FoodItem } from '../types';
 
-const FoodDelivery: React.FC = () => {
+interface FoodDeliveryProps {
+    language: 'EN' | 'HI';
+}
+
+const FoodDelivery: React.FC<FoodDeliveryProps> = ({ language }) => {
   const [cart, setCart] = useState<FoodItem[]>([]);
   const [orderPlaced, setOrderPlaced] = useState(false);
   
   // Simulation: Train stop is 10 mins away, stops for 5 mins.
   const timeToArrival = 10; 
   const haltDuration = 5;
+
+  const t = TRANSLATIONS[language].food;
 
   const addToCart = (item: FoodItem) => {
     if (item.prepTimeMinutes > timeToArrival + haltDuration) {
@@ -61,7 +67,7 @@ const FoodDelivery: React.FC = () => {
         {cart.length > 0 && (
             <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4">
                 <div className="flex justify-between font-bold text-gray-900 dark:text-white text-lg">
-                    <span>Total</span>
+                    <span>{t.total}</span>
                     <span>₹{total}</span>
                 </div>
                 <button 
@@ -74,7 +80,7 @@ const FoodDelivery: React.FC = () => {
                             Processing...
                         </>
                     ) : (
-                        'Checkout'
+                        t.checkout
                     )}
                 </button>
                 <p className="text-xs text-center text-gray-400">
@@ -93,8 +99,8 @@ const FoodDelivery: React.FC = () => {
         {/* Header */}
         <div className="bg-white dark:bg-gray-900 p-4 shadow-sm z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0 border-b border-gray-100 dark:border-gray-800">
             <div>
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white">Hyperlocal Delivery</h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Order from top rated outlets near upcoming station.</p>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white">{t.title}</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{t.subtitle}</p>
             </div>
             <div className="flex gap-2 text-xs w-full sm:w-auto">
                 <div className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-900 flex-1 sm:flex-none text-center">
@@ -116,7 +122,7 @@ const FoodDelivery: React.FC = () => {
                             <div className="relative">
                                 <img src={item.image} alt={item.name} className="w-24 h-24 rounded-lg object-cover bg-gray-200 shrink-0" />
                                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] p-1 text-center rounded-b-lg backdrop-blur-sm">
-                                    {item.prepTimeMinutes}m Prep
+                                    {item.prepTimeMinutes}m {t.prep}
                                 </div>
                             </div>
                             <div className="flex-1 flex flex-col justify-between">
@@ -159,7 +165,7 @@ const FoodDelivery: React.FC = () => {
                         onClick={placeOrder}
                         disabled={orderPlaced}
                         className="bg-green-600 text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg">
-                        {orderPlaced ? '...' : 'Checkout'}
+                        {orderPlaced ? '...' : t.checkout}
                     </button>
                 </div>
             </div>

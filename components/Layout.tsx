@@ -1,15 +1,27 @@
+
 import React, { useState, useEffect } from 'react';
-import { Tab } from '../types';
+import { Tab, UserProfile } from '../types';
+import { TRANSLATIONS } from '../constants';
 
 interface LayoutProps {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
+  language: 'EN' | 'HI';
+  setLanguage: (lang: 'EN' | 'HI') => void;
+  user: UserProfile;
+  onLogout: () => void;
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, children }) => {
+const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, language, setLanguage, user, onLogout, children }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showProfileStats, setShowProfileStats] = useState(false);
+  const [isSosActive, setIsSosActive] = useState(false);
+
+  const t = TRANSLATIONS[language].nav;
+
+  // Safe Name Accessor
+  const firstName = user.name ? user.name.split(' ')[0] : 'Traveller';
 
   useEffect(() => {
     if (isDarkMode) {
@@ -20,17 +32,32 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, children }) =>
   }, [isDarkMode]);
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
+  const toggleLanguage = () => setLanguage(language === 'EN' ? 'HI' : 'EN');
+
+  const handleSOS = () => {
+    const confirmSos = window.confirm("⚠️ SOS ACTIVATED\n\nCall Railway Protection Force (139)?");
+    if(confirmSos) {
+        setIsSosActive(true);
+        setTimeout(() => setIsSosActive(false), 5000);
+    }
+  }
+
+  const handleLogoutClick = () => {
+      if(window.confirm("Are you sure you want to logout?")) {
+          onLogout();
+      }
+  }
 
   const navItems = [
-    { id: Tab.HOME, label: 'Home', icon: '🏠' },
-    { id: Tab.SERVICES, label: 'Services', icon: '🛎️' },
-    { id: Tab.FOOD, label: 'Food', icon: '🍱' },
-    { id: Tab.COMMUNITY, label: 'Waze', icon: '📢' },
-    { id: Tab.AI_HELP, label: 'Sahayak', icon: '🤖' },
+    { id: Tab.HOME, label: t.home, icon: '🏠' },
+    { id: Tab.SERVICES, label: t.services, icon: '🛎️' },
+    { id: Tab.FOOD, label: t.food, icon: '🍱' },
+    { id: Tab.COMMUNITY, label: t.community, icon: '📢' },
+    { id: Tab.AI_HELP, label: t.ai, icon: '🤖' },
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden w-full transition-colors duration-200">
+    <div className={`flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden w-full transition-colors duration-200 ${isSosActive ? 'ring-8 ring-inset ring-red-500 animate-pulse' : ''}`}>
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm z-20 transition-colors duration-200">
         <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
@@ -54,6 +81,21 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, children }) =>
              {isDarkMode ? '🌙' : '☀️'}
            </button>
         </div>
+        
+        {/* Language & SOS Desktop */}
+        <div className="px-6 py-4 flex gap-3">
+             <button 
+                onClick={toggleLanguage}
+                className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg py-1 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                {language === 'EN' ? 'हिंदी' : 'English'}
+             </button>
+             <button 
+                onClick={handleSOS}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-lg py-1 text-sm font-bold shadow-sm animate-pulse">
+                SOS
+             </button>
+        </div>
+
         <nav className="flex-1 p-4 space-y-2">
           {navItems.map((item) => (
             <button
@@ -75,7 +117,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, children }) =>
         </nav>
         
         {/* User / Journey Card */}
-        <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="p-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
              <div 
                 onClick={() => setShowProfileStats(!showProfileStats)}
                 className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-4 text-white shadow-lg relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all"
@@ -87,10 +129,14 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, children }) =>
                 
                 {!showProfileStats ? (
                     <>
-                        <p className="text-xs text-blue-100 font-medium mb-1 flex justify-between items-center">
-                            YOUR JOURNEY <span className="text-[10px] opacity-70">Tap for Karma</span>
-                        </p>
-                        <p className="font-bold text-sm tracking-wide">12951 - Rajdhani</p>
+                        <div className="flex items-center gap-2 mb-2">
+                            <img src={user.avatar} className="w-8 h-8 rounded-full border border-white/50 bg-white" alt={user.name} />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs text-blue-200 font-medium truncate">Welcome,</p>
+                                <p className="font-bold text-sm tracking-wide truncate">{firstName}</p>
+                            </div>
+                        </div>
+                        <p className="font-bold text-xs tracking-wide bg-white/10 px-2 py-1 rounded w-fit">12951 - Rajdhani</p>
                         <div className="mt-3 flex gap-3 text-xs border-t border-white/20 pt-2">
                             <div>
                                 <span className="block opacity-70 text-[10px] uppercase">Coach</span>
@@ -105,29 +151,37 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, children }) =>
                 ) : (
                     <>
                          <p className="text-xs text-blue-100 font-medium mb-1 flex justify-between items-center">
-                            SAHAYAK PROFILE <span className="text-[10px] opacity-70">Tap for Ticket</span>
+                            SAHAYAK PROFILE
                         </p>
                         <div className="flex items-center gap-2 mb-2">
                             <span className="text-xl">🛡️</span>
                             <div>
-                                <p className="font-bold text-sm tracking-wide leading-none">Level 4: Guide</p>
+                                <p className="font-bold text-sm tracking-wide leading-none">{user.level}</p>
                                 <p className="text-[10px] opacity-80">Next: Guardian</p>
                             </div>
                         </div>
                         
                         <div className="mt-1">
                             <div className="flex justify-between text-[10px] mb-1 font-medium">
-                                <span>Karma: 450</span>
+                                <span>Karma: {user.points}</span>
                                 <span>Goal: 500</span>
                             </div>
                             <div className="w-full bg-black/20 rounded-full h-1.5">
-                                <div className="bg-yellow-400 h-1.5 rounded-full" style={{width: '90%'}}></div>
+                                <div className="bg-yellow-400 h-1.5 rounded-full" style={{width: `${(user.points/500)*100}%`}}></div>
                             </div>
-                            <p className="text-[10px] mt-2 opacity-90 text-center">You helped 12 people today!</p>
                         </div>
                     </>
                 )}
              </div>
+
+             {/* Explicit Desktop Logout Button */}
+             <button 
+                onClick={handleLogoutClick}
+                className="w-full flex items-center justify-center gap-2 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-lg transition-colors"
+             >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Sign Out
+             </button>
         </div>
       </aside>
 
@@ -139,15 +193,32 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, children }) =>
               🚆 RailSahayak
             </h1>
             <div className="flex items-center gap-3">
-               <span className="text-xs bg-blue-600 dark:bg-gray-800 px-2 py-1 rounded-full border border-blue-400 dark:border-gray-700">
-                Online
-              </span>
+               <button onClick={toggleLanguage} className="text-xs font-bold border border-white/30 rounded px-2 py-1">
+                 {language === 'EN' ? 'HI' : 'EN'}
+               </button>
+               <button onClick={handleSOS} className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center animate-pulse shadow-lg border border-red-400">
+                 🚨
+               </button>
               <button 
                 onClick={toggleTheme} 
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 dark:bg-gray-800 border border-blue-500 dark:border-gray-700 text-sm"
               >
                 {isDarkMode ? '🌙' : '☀️'}
               </button>
+              <div className="relative group flex items-center gap-2">
+                  <img 
+                    src={user.avatar} 
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full border border-white/50 bg-white" 
+                  />
+                  {/* Mobile Logout Icon */}
+                  <button 
+                    onClick={handleLogoutClick}
+                    className="bg-white/20 p-1.5 rounded-full hover:bg-red-500 hover:text-white transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                  </button>
+              </div>
             </div>
         </header>
 

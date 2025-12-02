@@ -6,6 +6,16 @@ export enum Tab {
   AI_HELP = 'AI_HELP'
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  provider: 'GOOGLE' | 'FACEBOOK' | 'EMAIL';
+  level: string; // Gamification level
+  points: number;
+}
+
 export interface StationUpdate {
   id: string;
   type: 'ISSUE' | 'INFO' | 'CROWD';

@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { INITIAL_UPDATES, MOCK_LEADERBOARD } from '../constants';
+import { INITIAL_UPDATES, MOCK_LEADERBOARD, TRANSLATIONS } from '../constants';
 import { StationUpdate } from '../types';
 import { analyzeStationUpdate } from '../services/geminiService';
 
-const StationIntel: React.FC = () => {
+interface StationIntelProps {
+    language: 'EN' | 'HI';
+}
+
+const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
   const [updates, setUpdates] = useState<StationUpdate[]>(INITIAL_UPDATES);
   const [activeTab, setActiveTab] = useState<'FEED' | 'LEADERBOARD'>('FEED');
   const [isAdding, setIsAdding] = useState(false);
   const [newReportText, setNewReportText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+
+  const t = TRANSLATIONS[language].community;
 
   const handleAddReport = async () => {
     if (!newReportText.trim()) return;
@@ -54,9 +60,7 @@ const StationIntel: React.FC = () => {
          </div>
        )}
 
-       {/* Map Section - Hidden on mobile if Leaderboard is active? No, Map is always visible on desktop, hidden on mobile feed/leaderboard toggle usually.
-           Actually for mobile, we usually stack map on top. Let's keep existing structure but allow tab switch for the bottom part.
-       */}
+       {/* Map Section */}
        <div className={`
            ${activeTab === 'LEADERBOARD' ? 'hidden md:block' : 'block'} 
            h-48 md:h-full md:w-1/2 bg-slate-100 dark:bg-gray-800 relative shrink-0 border-r border-gray-200 dark:border-gray-700 overflow-hidden group transition-colors duration-200
@@ -98,7 +102,7 @@ const StationIntel: React.FC = () => {
                     onClick={() => setIsAdding(true)}
                     className="bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-200 text-white dark:text-black px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95">
                     <span className="text-xl font-bold">+</span>
-                    <span className="font-medium text-sm">Report Issue</span>
+                    <span className="font-medium text-sm">{t.reportIssue}</span>
                </button>
            </div>
        </div>
@@ -113,13 +117,13 @@ const StationIntel: React.FC = () => {
                         onClick={() => setActiveTab('FEED')}
                         className={`pb-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'FEED' ? 'text-blue-600 border-blue-600 dark:text-blue-400 dark:border-blue-400' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
                      >
-                         Live Alerts
+                         {t.liveAlerts}
                      </button>
                      <button 
                         onClick={() => setActiveTab('LEADERBOARD')}
                         className={`pb-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'LEADERBOARD' ? 'text-blue-600 border-blue-600 dark:text-blue-400 dark:border-blue-400' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
                      >
-                         Top Sahayaks
+                         {t.topSahayaks}
                      </button>
                  </div>
                  {activeTab === 'FEED' && (
@@ -245,7 +249,7 @@ const StationIntel: React.FC = () => {
            <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
                <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 border border-gray-200 dark:border-gray-800">
                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Report Incident</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t.reportIssue}</h3>
                         <button onClick={() => setIsAdding(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">✕</button>
                    </div>
                    <textarea
