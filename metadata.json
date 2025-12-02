@@ -1,0 +1,8 @@
+{
+  "name": "RailSahayak",
+  "description": "The 'Uber' and 'Yelp' for Indian Railway Stations. A comprehensive platform for porter booking, station intelligence, and hyperlocal food delivery.",
+  "requestFramePermissions": [
+    "geolocation",
+    "microphone"
+  ]
+}

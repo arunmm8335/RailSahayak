@@ -1,0 +1,149 @@
+import React, { useState } from 'react';
+import { ServiceBooking } from '../types';
+
+const Services: React.FC = () => {
+  const [activeService, setActiveService] = useState<'COOLIE' | 'WHEELCHAIR' | 'CLOAK'>('COOLIE');
+  const [bookings, setBookings] = useState<ServiceBooking[]>([]);
+  const [luggageWeight, setLuggageWeight] = useState(20);
+
+  const handleBook = () => {
+    const newBooking: ServiceBooking = {
+        id: Math.random().toString(36).substr(2, 9),
+        type: activeService === 'COOLIE' ? 'COOLIE' : activeService === 'WHEELCHAIR' ? 'WHEELCHAIR' : 'CLOAKROOM',
+        status: 'PENDING',
+        details: activeService === 'COOLIE' ? `${luggageWeight}kg Luggage` : 'Assistance Required',
+        price: activeService === 'COOLIE' ? Math.floor(luggageWeight * 2.5) : 0
+    };
+    setBookings([newBooking, ...bookings]);
+  };
+
+  return (
+    <div className="p-4 md:p-0 space-y-6 h-full flex flex-col">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Station Services</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Book certified porters and assistance instantly.</p>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-6 flex-1">
+        {/* Left Column: Form */}
+        <div className="flex-1 space-y-6">
+            {/* Service Selector */}
+            <div className="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-lg">
+                <button 
+                    onClick={() => setActiveService('COOLIE')}
+                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeService === 'COOLIE' ? 'bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>
+                    Coolie
+                </button>
+                <button 
+                    onClick={() => setActiveService('WHEELCHAIR')}
+                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeService === 'WHEELCHAIR' ? 'bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>
+                    Wheelchair
+                </button>
+                <button 
+                    onClick={() => setActiveService('CLOAK')}
+                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeService === 'CLOAK' ? 'bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>
+                    Cloak Room
+                </button>
+            </div>
+
+            {/* Booking Form Card */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 min-h-[300px] flex flex-col justify-between transition-colors duration-200">
+                {activeService === 'COOLIE' && (
+                    <div className="space-y-6">
+                        <div className="text-center">
+                            <span className="text-6xl grayscale dark:invert">🧳</span>
+                            <h3 className="text-lg font-bold mt-2 text-gray-900 dark:text-white">Book a Sahayak</h3>
+                            <p className="text-xs text-gray-400">Uniformed • Verified • Fixed Rate</p>
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Luggage Weight (Approx)</label>
+                            <input 
+                                type="range" 
+                                min="5" 
+                                max="80" 
+                                value={luggageWeight} 
+                                onChange={(e) => setLuggageWeight(parseInt(e.target.value))}
+                                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                            />
+                            <div className="flex justify-between mt-2">
+                                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{luggageWeight} kg</span>
+                                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">₹{Math.floor(luggageWeight * 2.5)}</span>
+                            </div>
+                        </div>
+
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-xs text-blue-800 dark:text-blue-200">
+                            <p><strong>Note:</strong> Porter will meet you at Coach A1 upon arrival.</p>
+                        </div>
+                    </div>
+                )}
+
+                {activeService === 'WHEELCHAIR' && (
+                    <div className="space-y-6 text-center">
+                        <span className="text-6xl grayscale dark:invert">♿</span>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Request Mobility Assistance</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Free service for senior citizens and PwD.</p>
+                        <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg text-xs text-green-800 dark:text-green-200 text-left">
+                            <p>✓ Electric Cart Available at Platform 1</p>
+                            <p>✓ Manual Wheelchair Available at all platforms</p>
+                        </div>
+                    </div>
+                )}
+
+                {activeService === 'CLOAK' && (
+                    <div className="space-y-6 text-center">
+                        <span className="text-6xl grayscale dark:invert">🔐</span>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Check Locker Availability</h3>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-lg">
+                                <div className="text-2xl font-bold text-green-700 dark:text-green-400">12</div>
+                                <div className="text-xs text-green-800 dark:text-green-300">Large Lockers</div>
+                            </div>
+                            <div className="bg-red-100 dark:bg-red-900/30 p-4 rounded-lg">
+                                <div className="text-2xl font-bold text-red-700 dark:text-red-400">0</div>
+                                <div className="text-xs text-red-800 dark:text-red-300">Small Lockers</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <button 
+                    onClick={handleBook}
+                    className="w-full mt-6 bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-500 text-white py-3 rounded-lg font-semibold shadow-lg transition transform active:scale-95">
+                    {activeService === 'CLOAK' ? 'Reserve Locker' : 'Confirm Request'}
+                </button>
+            </div>
+        </div>
+
+        {/* Right Column: Bookings (Sticky on desktop) */}
+        <div className="flex-1">
+             <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 h-full transition-colors duration-200">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Your Active Requests</h3>
+                {bookings.length > 0 ? (
+                    <div className="space-y-3">
+                        {bookings.map((booking) => (
+                            <div key={booking.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border-l-4 border-yellow-400 shadow-sm flex justify-between items-center group hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition">
+                                <div>
+                                    <p className="font-bold text-gray-800 dark:text-gray-200">{booking.type === 'COOLIE' ? 'Porter Request' : booking.type}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{booking.details} • ID: #{booking.id}</p>
+                                </div>
+                                <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs px-2 py-1 rounded font-medium">
+                                    {booking.status}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+                        <span className="text-4xl mb-2 opacity-30 grayscale dark:invert">📋</span>
+                        <p className="text-sm">No active bookings yet.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Services;
