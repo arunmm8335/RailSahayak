@@ -1,4 +1,4 @@
-# 🚆 RailSahayak: The Station Ecosystem Platform
+# RailSahayak: The Station Ecosystem Platform
 
 > **"The Uber for Porters, Zomato for Station Food, and Waze for Platform Intelligence."**
 
@@ -6,39 +6,39 @@ RailSahayak is a hyperlocal web application designed to solve the "Last Mile" ch
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-### 1. ⚡ Live Train & Platform Intelligence
+### 1. Live Train & Platform Intelligence
 - **Hybrid Tracking Engine:** Uses a mix of Real-time APIs and a sophisticated simulation engine to track train speed, location, and delays.
 - **Coach Position:** Visual indicator of where your coach will arrive on the platform.
 - **Destination Alarm:** Geofenced wake-up alarm that alerts you 20km before your stop.
 
-### 2. 🧳 Service Booking (Uber for Stations)
+### 2. Service Booking (Uber for Stations)
 - **Coolie Booking:** Pre-book porters with fixed pricing based on luggage weight.
 - **Wheelchair Assistance:** Request mobility support for seniors and PwD.
 - **Cloak Room:** Check real-time locker availability.
 
-### 3. 🍱 Hyperlocal Food Delivery
+### 3. Hyperlocal Food Delivery
 - **Dynamic Menu:** Orders are accepted only if the "Kitchen Prep Time" < "Train Arrival Time".
 - **Live Receipt:** Generates detailed digital invoices saved to the cloud.
 - **Cart Logic:** Prevents ordering from high-risk restaurants if the train is departing soon.
 
-### 4. 🏥 RailMed (Doctor on Board)
+### 4. RailMed (Doctor on Board)
 - **Manifest Scanning:** Simulates scanning the passenger chart to locate registered doctors travelling on the *same train*.
 - **Emergency Access:** One-tap request for medical assistance.
 
-### 5. 📢 Community Intel (Waze for Stations)
+### 5. Community Intel (Waze for Stations)
 - **Crowdsourced Issues:** Users report broken lifts, dirty toilets, or crowds.
 - **Gamification:** Earn "Karma Points" and rank up (Scout → Guardian → Legend) by helping others.
 - **AI Analysis:** Google Gemini analyzes reports to categorize severity automatically.
 
-### 6. 🤖 AI Assistant (Bolo Sahayak)
+### 6. AI Assistant (Bolo Sahayak)
 - **Voice-First:** Click the mic to speak PNRs or ask questions in Hindi/English.
 - **Gemini Powered:** Context-aware chatbot for station queries.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend:** React 18, TypeScript, Tailwind CSS
 - **Styling:** Dark/Light Mode with Slate palette
@@ -49,7 +49,7 @@ RailSahayak is a hyperlocal web application designed to solve the "Last Mile" ch
 
 ---
 
-## 📊 System Architecture & Flow Diagrams
+## System Architecture & Flow Diagrams
 
 ### 1. High-Level Architecture
 ```mermaid
@@ -116,7 +116,7 @@ graph LR
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 1. **Clone the repository**
    ```bash
@@ -157,10 +157,6 @@ graph LR
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request for any features or bug fixes.
-
-## 📄 License
-
-This project is licensed under the MIT License.
