@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  signInWithPopup, 
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
@@ -20,16 +22,53 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [domainError, setDomainError] = useState<string | null>(null);
+  const [error, setError] = useState<{message: string, hint?: string} | null>(null);
   
   // Capture the exact hostname causing the issue
   const [currentHostname, setCurrentHostname] = useState('');
+  const [isBlobEnv, setIsBlobEnv] = useState(false);
+
+  const getRobustHostname = () => {
+    if (typeof window === 'undefined') return '';
+    
+    // 1. Handle blob URLs (Critical for this user's environment)
+    if (window.location.protocol === 'blob:' || window.location.href.startsWith('blob:')) {
+        try {
+            const raw = window.location.href.replace('blob:', '');
+            const url = new URL(raw);
+            return url.hostname;
+        } catch (e) {
+            const parts = window.location.href.split('/');
+            if (parts.length > 2) return parts[2];
+        }
+    }
+    return window.location.hostname || window.location.host || '';
+  };
 
   useEffect(() => {
-      if (typeof window !== 'undefined') {
-          setCurrentHostname(window.location.hostname);
-      }
+      const host = getRobustHostname();
+      setCurrentHostname(host);
+      // Strict check for blob environment
+      setIsBlobEnv(window.location.protocol === 'blob:' || window.location.href.startsWith('blob:'));
+      
+      const checkRedirectResult = async () => {
+        if (isFirebaseConfigured && auth) {
+          try {
+            const pending = localStorage.getItem('railSahayak_auth_pending');
+            if (pending) {
+              setIsLoading(true);
+              await getRedirectResult(auth);
+              localStorage.removeItem('railSahayak_auth_pending');
+              setIsLoading(false);
+            }
+          } catch (err: any) {
+            console.error('❌ Redirect result error:', err);
+            localStorage.removeItem('railSahayak_auth_pending');
+            setIsLoading(false);
+          }
+        }
+      };
+      checkRedirectResult();
   }, []);
 
   // Helper to format Firebase User to App UserProfile
@@ -59,41 +98,27 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       setIsLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = async (useRedirect = false) => {
     setIsLoading(true);
     setError(null);
-    setDomainError(null);
+    
     try {
       if (isFirebaseConfigured && auth) {
           const provider = new GoogleAuthProvider();
           provider.setCustomParameters({ prompt: 'select_account' });
-          await signInWithPopup(auth, provider);
-          // App.tsx onAuthStateChanged will handle the rest
+          
+          if (useRedirect) {
+            localStorage.setItem('railSahayak_auth_pending', 'true');
+            await signInWithRedirect(auth, provider);
+          } else {
+            await signInWithPopup(auth, provider);
+          }
       } else {
-          // Fallback if keys are missing (should not happen if real keys are set)
           await handleMockLogin('GOOGLE');
       }
     } catch (err: any) {
-      console.error("Auth Error:", err);
-      const code = err.code || '';
-      const msg = err.message || '';
-
-      // In Cloud IDEs, "Popup Closed" is almost ALWAYS caused by Domain Mismatch (Popup opens -> sees wrong domain -> closes).
-      // So we treat it as a domain error to give the user the right solution.
-      if (
-          code === 'auth/unauthorized-domain' || 
-          msg.includes('unauthorized-domain') ||
-          code === 'auth/popup-closed-by-user' ||
-          code === 'auth/operation-not-allowed'
-      ) {
-          setDomainError(window.location.hostname);
-      } 
-      else if (code === 'auth/popup-blocked') {
-           setError('Popup blocked. Please allow popups for this site in your browser settings.');
-      }
-      else {
-          setError(msg || 'Failed to sign in with Google');
-      }
+      console.error("❌ Auth Error:", err.code, err.message);
+      setError({ message: err.message });
       setIsLoading(false);
     }
   };
@@ -102,7 +127,6 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setDomainError(null);
 
     try {
       if (isFirebaseConfigured && auth) {
@@ -118,12 +142,28 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           await handleMockLogin('EMAIL');
       }
     } catch (err: any) {
-      console.error(err);
+      console.error('❌ Email Auth Error:', err.code);
       let msg = "Authentication failed";
-      if (err.code === 'auth/invalid-credential') msg = "Invalid email or password.";
-      if (err.code === 'auth/email-already-in-use') msg = "Email already registered.";
-      if (err.code === 'auth/weak-password') msg = "Password should be at least 6 characters.";
-      setError(msg);
+      let hint = "";
+
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+          msg = "Invalid email or password.";
+          if (isLogin) hint = "Check for typos or try creating a new account.";
+      }
+      if (err.code === 'auth/user-not-found') {
+          msg = "No account found.";
+          hint = "Please switch to the 'Register' tab to create an account first.";
+      }
+      if (err.code === 'auth/email-already-in-use') {
+          msg = "Email already registered.";
+          hint = "Try logging in instead.";
+      }
+      if (err.code === 'auth/operation-not-allowed') {
+          msg = "Email/Password login is not enabled.";
+          hint = "Go to Firebase Console > Authentication > Sign-in method and enable 'Email/Password'.";
+      }
+
+      setError({ message: msg, hint: hint });
     } finally {
       setIsLoading(false);
     }
@@ -132,12 +172,11 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950 p-4 transition-colors duration-200 relative overflow-hidden">
       
-      {/* Background Ambience */}
       <div className="absolute inset-0 z-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&q=80')] bg-cover bg-center"></div>
       
       <div className="bg-white dark:bg-gray-900 w-full max-w-4xl rounded-2xl shadow-2xl flex overflow-hidden relative z-10 border border-gray-200 dark:border-gray-800">
         
-        {/* Left Side: Brand & Visual */}
+        {/* Left Side */}
         <div className="hidden md:flex flex-col justify-between w-1/2 bg-gradient-to-br from-blue-700 to-indigo-800 p-10 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-white opacity-5 rounded-full -ml-10 -mb-10"></div>
@@ -157,13 +196,13 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                     <p className="text-sm font-medium">Hyperlocal Food Delivery</p>
                 </div>
             </div>
-
+            
             <div className="z-10">
                  <p className="text-xs text-blue-200 opacity-60">© 2024 RailSahayak. All rights reserved.</p>
             </div>
         </div>
 
-        {/* Right Side: Auth Form */}
+        {/* Right Side */}
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
             
             <div className="text-center mb-6">
@@ -175,143 +214,128 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 </p>
             </div>
 
-            {/* DOMAIN ERROR BOX (Critical) */}
-            {domainError && (
-                <div className="mb-6 p-5 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl text-left shadow-lg animate-in fade-in slide-in-from-top-2">
-                    <h3 className="text-red-700 dark:text-red-300 font-bold text-base flex items-center gap-2 mb-3">
-                        <span className="text-xl">⚠️</span> Domain Mismatch Detected
-                    </h3>
-                    
-                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-2 leading-relaxed">
-                        Firebase blocks logins because the <strong>URL in your browser</strong> is not in your Authorized List.
-                    </p>
-
-                    <div className="grid grid-cols-1 gap-2 mb-4">
-                        <div className="bg-red-100 dark:bg-red-900/40 p-2 rounded border border-red-200 dark:border-red-800">
-                            <span className="text-[10px] font-bold text-red-800 dark:text-red-200 block">YOU ARE CURRENTLY ON:</span>
-                            <code className="text-xs break-all text-red-600 dark:text-red-300 font-mono">{currentHostname}</code>
-                        </div>
-                        <div className="bg-green-100 dark:bg-green-900/40 p-2 rounded border border-green-200 dark:border-green-800 opacity-70">
-                            <span className="text-[10px] font-bold text-green-800 dark:text-green-200 block">FIREBASE EXPECTS:</span>
-                            <code className="text-xs text-green-700 dark:text-green-300 font-mono">railsahayak-db848.firebaseapp.com</code>
+            {/* Blob Environment Alert */}
+            {isBlobEnv && (
+                <div className="mb-6 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-4 text-xs">
+                    <div className="flex items-start gap-2 mb-2">
+                        <span className="text-lg">ℹ️</span>
+                        <div>
+                            <strong className="text-blue-800 dark:text-blue-200 block mb-1">Dynamic Preview Environment Detected</strong>
+                            <p className="text-blue-700 dark:text-blue-300">
+                                This cloud environment rotates domains automatically.
+                            </p>
                         </div>
                     </div>
-
-                    <div className="bg-white dark:bg-black/40 p-3 rounded-lg border border-red-100 dark:border-red-900 mb-4 flex justify-between items-center group">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Copy the red URL above</span>
-                        <button 
-                            onClick={() => navigator.clipboard.writeText(currentHostname)}
-                            className="ml-2 text-[10px] bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 font-bold shadow-sm"
-                        >
-                            COPY URL
-                        </button>
+                    <div className="bg-white dark:bg-black/20 p-2 rounded mt-2 text-gray-700 dark:text-gray-300">
+                        <p><strong>Recommendation:</strong> Use <strong>Email/Password</strong> below.</p>
+                        <p className="opacity-80 mt-1">Google Sign-In requires a static domain and will fail here.</p>
                     </div>
+                </div>
+            )}
 
-                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1 mb-4">
-                        <p>1. Go to <a href="https://console.firebase.google.com/" target="_blank" className="underline font-bold text-blue-600">Firebase Console</a> > Auth > Settings.</p>
-                        <p>2. Click <strong>Add Domain</strong> and paste the copied URL.</p>
-                        <p>3. Come back here and retry.</p>
+            {error && (
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm rounded-lg text-left">
+                    <p className="font-bold flex items-center gap-2">⚠️ {error.message}</p>
+                    {error.hint && <p className="mt-1 opacity-90 text-xs">{error.hint}</p>}
+                </div>
+            )}
+
+            {/* Google Auth - Disabled in Blob */}
+            <div className="space-y-3 mb-6">
+                <button 
+                    onClick={() => handleGoogleLogin(false)}
+                    disabled={isLoading || isBlobEnv}
+                    title={isBlobEnv ? "Not available in dynamic preview environment" : "Sign in with Google"}
+                    type="button"
+                    className={`w-full flex items-center justify-center gap-3 border font-medium py-2.5 rounded-lg transition active:scale-95 shadow-sm relative ${
+                        isBlobEnv 
+                        ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed opacity-60' 
+                        : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}>
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" className={`w-5 h-5 ${isBlobEnv ? 'grayscale opacity-50' : ''}`} alt="Google" />
+                    {isBlobEnv ? 'Google Sign-In (Unavailable in Preview)' : 'Continue with Google'}
+                </button>
+            </div>
+
+            <div className="relative flex py-2 items-center mb-6">
+                <div className="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+                <span className="flex-shrink mx-4 text-gray-400 text-xs uppercase font-bold tracking-wider">
+                    {isBlobEnv ? 'Recommended Method' : 'Or use email'}
+                </span>
+                <div className="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+            </div>
+
+            {/* Email Form - REAL AUTH */}
+            <form className="space-y-4" onSubmit={handleEmailAuth}>
+                {!isLogin && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                        <input 
+                            type="text" 
+                            required
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                            placeholder="John Doe"
+                        />
                     </div>
+                )}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                    <input 
+                        type="email" 
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                        placeholder="john@example.com"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                    <input 
+                        type="password" 
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                        placeholder="••••••••"
+                        minLength={6}
+                    />
+                </div>
 
+                <button 
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow-lg transition transform active:scale-95 disabled:bg-gray-400 disabled:shadow-none flex justify-center items-center">
+                    {isLoading ? (
+                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                        isLogin ? 'Sign In (Real Auth)' : 'Create Account'
+                    )}
+                </button>
+            </form>
+
+            {/* Toggle */}
+            <div className="mt-6 text-center text-sm">
+                <p className="text-gray-600 dark:text-gray-400">
+                    {isLogin ? "Don't have an account?" : "Already have an account?"}
                     <button 
-                        onClick={() => handleGoogleLogin()}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-lg flex items-center justify-center gap-2">
-                        <span>🔄</span> Retry Google Login
+                        onClick={() => { setIsLogin(!isLogin); setError(null); }}
+                        className="ml-2 font-bold text-blue-600 dark:text-blue-400 hover:underline">
+                        {isLogin ? 'Register' : 'Sign In'}
                     </button>
-                </div>
-            )}
-
-            {/* Standard Error */}
-            {error && !domainError && (
-                <div className="mb-6 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 text-xs rounded-lg text-center font-medium">
-                    {error}
-                </div>
-            )}
-
-            {!domainError && (
-                <>
-                    {/* OAuth Buttons */}
-                    <div className="space-y-3 mb-6">
-                        <button 
-                            onClick={() => handleGoogleLogin()}
-                            disabled={isLoading}
-                            type="button"
-                            className="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition active:scale-95 disabled:opacity-50">
-                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-                            Continue with Google
-                        </button>
-                    </div>
-
-                    <div className="relative flex py-2 items-center mb-6">
-                        <div className="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
-                        <span className="flex-shrink mx-4 text-gray-400 text-xs uppercase">Or use email</span>
-                        <div className="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
-                    </div>
-
-                    {/* Email Form */}
-                    <form className="space-y-4" onSubmit={handleEmailAuth}>
-                        {!isLogin && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-                                <input 
-                                    type="text" 
-                                    required
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
-                                    placeholder="John Doe"
-                                />
-                            </div>
-                        )}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
-                            <input 
-                                type="email" 
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
-                                placeholder="john@example.com"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                            <input 
-                                type="password" 
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
-                                placeholder="••••••••"
-                                minLength={6}
-                            />
-                        </div>
-
-                        <button 
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow-lg transition transform active:scale-95 disabled:bg-gray-400 disabled:shadow-none flex justify-center items-center">
-                            {isLoading ? (
-                                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                            ) : (
-                                isLogin ? 'Sign In' : 'Create Account'
-                            )}
-                        </button>
-                    </form>
-
-                    {/* Toggle */}
-                    <div className="mt-6 text-center text-sm">
-                        <p className="text-gray-600 dark:text-gray-400">
-                            {isLogin ? "Don't have an account?" : "Already have an account?"}
-                            <button 
-                                onClick={() => { setIsLogin(!isLogin); setError(null); setDomainError(null); }}
-                                className="ml-2 font-bold text-blue-600 dark:text-blue-400 hover:underline">
-                                {isLogin ? 'Register' : 'Sign In'}
-                            </button>
-                        </p>
-                    </div>
-                </>
-            )}
+                </p>
+            </div>
+            
+            {/* Fallback */}
+            <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 text-center">
+                <button 
+                    onClick={() => handleMockLogin('GOOGLE')}
+                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 underline">
+                    I can't get this to work (Emergency Bypass)
+                </button>
+             </div>
         </div>
       </div>
     </div>

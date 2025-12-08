@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { INITIAL_UPDATES, MOCK_LEADERBOARD, TRANSLATIONS } from '../constants';
 import { StationUpdate } from '../types';
@@ -47,7 +48,7 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
   };
 
   return (
-    <div className="relative h-full flex flex-col md:flex-row bg-gray-50 dark:bg-gray-950 md:rounded-xl md:overflow-hidden md:border md:border-gray-200 dark:md:border-gray-800 transition-colors duration-200">
+    <div className="relative h-full flex flex-col md:flex-row bg-gray-50 dark:bg-slate-950 md:rounded-xl md:overflow-hidden md:border md:border-gray-200 dark:md:border-slate-800 transition-colors duration-300">
        
        {/* Confetti / Points Animation Overlay */}
        {showConfetti && (
@@ -63,19 +64,19 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
        {/* Map Section */}
        <div className={`
            ${activeTab === 'LEADERBOARD' ? 'hidden md:block' : 'block'} 
-           h-48 md:h-full md:w-1/2 bg-slate-100 dark:bg-gray-800 relative shrink-0 border-r border-gray-200 dark:border-gray-700 overflow-hidden group transition-colors duration-200
+           h-48 md:h-full md:w-1/2 bg-slate-100 dark:bg-slate-800 relative shrink-0 border-r border-gray-200 dark:border-slate-700 overflow-hidden group transition-colors duration-300
        `}>
            {/* Map Background Pattern */}
-           <div className="absolute inset-0 opacity-10 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Location_dot_black.svg/1024px-Location_dot_black.svg.png')] bg-repeat bg-[length:50px_50px] dark:invert"></div>
+           <div className="absolute inset-0 opacity-10 dark:opacity-20 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Location_dot_black.svg/1024px-Location_dot_black.svg.png')] bg-repeat bg-[length:50px_50px] dark:invert"></div>
            
            {/* Mock Map UI Elements */}
            <div className="absolute inset-0 flex items-center justify-center">
                 {/* Station Layout Mockup */}
-                <div className="w-[80%] h-[60%] border-4 border-gray-300 dark:border-gray-600 rounded-xl relative bg-white/40 dark:bg-black/40 backdrop-blur-sm">
+                <div className="w-[80%] h-[60%] border-4 border-gray-300 dark:border-slate-600 rounded-xl relative bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm shadow-xl">
                     {/* Platform Lines */}
-                    <div className="absolute top-1/4 w-full h-2 bg-gray-300 dark:bg-gray-600"></div>
-                    <div className="absolute top-2/4 w-full h-2 bg-gray-300 dark:bg-gray-600"></div>
-                    <div className="absolute top-3/4 w-full h-2 bg-gray-300 dark:bg-gray-600"></div>
+                    <div className="absolute top-1/4 w-full h-2 bg-gray-300 dark:bg-slate-600"></div>
+                    <div className="absolute top-2/4 w-full h-2 bg-gray-300 dark:bg-slate-600"></div>
+                    <div className="absolute top-3/4 w-full h-2 bg-gray-300 dark:bg-slate-600"></div>
                     
                     {/* Pins */}
                     {updates.slice(0, 3).map((u, i) => (
@@ -91,9 +92,9 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
                 </div>
            </div>
 
-           <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/60 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <p className="text-xs font-bold text-gray-700 dark:text-gray-200">New Delhi (NDLS)</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400">Live Crowd Heatmap</p>
+           <div className="absolute top-4 left-4 bg-white/90 dark:bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
+                <p className="text-xs font-bold text-gray-700 dark:text-slate-200">New Delhi (NDLS)</p>
+                <p className="text-[10px] text-gray-500 dark:text-slate-400">Live Crowd Heatmap</p>
            </div>
            
            {/* Desktop FAB inside Map Area */}
@@ -108,20 +109,20 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
        </div>
 
        {/* Right Panel: Tabs & Content */}
-       <div className="flex-1 -mt-6 md:mt-0 bg-gray-50 dark:bg-gray-900 md:bg-white dark:md:bg-gray-900 rounded-t-3xl md:rounded-none relative z-10 overflow-hidden flex flex-col transition-colors duration-200 h-full">
+       <div className="flex-1 -mt-6 md:mt-0 bg-gray-50 dark:bg-slate-950 md:bg-white dark:md:bg-slate-900 rounded-t-3xl md:rounded-none relative z-10 overflow-hidden flex flex-col transition-colors duration-300 h-full">
             
             {/* Tabs Header */}
-            <div className="flex items-center justify-between px-4 pt-4 pb-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 rounded-t-3xl md:rounded-none">
+            <div className="flex items-center justify-between px-4 pt-4 pb-0 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 rounded-t-3xl md:rounded-none">
                  <div className="flex gap-4">
                      <button 
                         onClick={() => setActiveTab('FEED')}
-                        className={`pb-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'FEED' ? 'text-blue-600 border-blue-600 dark:text-blue-400 dark:border-blue-400' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
+                        className={`pb-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'FEED' ? 'text-blue-600 border-blue-600 dark:text-blue-400 dark:border-blue-400' : 'text-gray-400 border-transparent hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300'}`}
                      >
                          {t.liveAlerts}
                      </button>
                      <button 
                         onClick={() => setActiveTab('LEADERBOARD')}
-                        className={`pb-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'LEADERBOARD' ? 'text-blue-600 border-blue-600 dark:text-blue-400 dark:border-blue-400' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
+                        className={`pb-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'LEADERBOARD' ? 'text-blue-600 border-blue-600 dark:text-blue-400 dark:border-blue-400' : 'text-gray-400 border-transparent hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300'}`}
                      >
                          {t.topSahayaks}
                      </button>
@@ -141,7 +142,7 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
                 {activeTab === 'FEED' && (
                     <div className="space-y-0">
                         {updates.map((update) => (
-                            <div key={update.id} className="p-4 md:p-6 border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition group">
+                            <div key={update.id} className="p-4 md:p-6 border-b border-gray-50 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition group">
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex gap-2 items-center">
                                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
@@ -151,24 +152,24 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
                                         }`}>
                                             {update.type}
                                         </span>
-                                        <span className="text-[10px] text-gray-400 font-medium">
+                                        <span className="text-[10px] text-gray-400 dark:text-slate-500 font-medium">
                                             {update.location}
                                         </span>
                                     </div>
-                                    <span className="text-[10px] text-gray-400">
+                                    <span className="text-[10px] text-gray-400 dark:text-slate-500">
                                         {update.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                     </span>
                                 </div>
-                                <p className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed mb-3">{update.text}</p>
-                                <div className="flex justify-between items-center border-t border-gray-50 dark:border-gray-800/50 pt-2 mt-2">
-                                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                                <p className="text-gray-800 dark:text-slate-200 text-sm leading-relaxed mb-3">{update.text}</p>
+                                <div className="flex justify-between items-center border-t border-gray-50 dark:border-slate-800/50 pt-2 mt-2">
+                                    <div className="flex items-center gap-2 text-gray-400 dark:text-slate-500 text-xs">
                                         <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-[10px] text-white font-bold">
                                             {update.user ? update.user[0] : 'U'}
                                         </div>
-                                        <span className="font-medium text-gray-600 dark:text-gray-300">{update.user || 'Verified User'}</span>
-                                        <span className="bg-gray-100 dark:bg-gray-800 px-1.5 rounded text-[9px] border border-gray-200 dark:border-gray-700">{update.userRank || 'Scout'}</span>
+                                        <span className="font-medium text-gray-600 dark:text-slate-400">{update.user || 'Verified User'}</span>
+                                        <span className="bg-gray-100 dark:bg-slate-800 px-1.5 rounded text-[9px] border border-gray-200 dark:border-slate-700">{update.userRank || 'Scout'}</span>
                                     </div>
-                                    <div className="flex gap-3 text-gray-400 text-xs font-medium opacity-60 group-hover:opacity-100 transition">
+                                    <div className="flex gap-3 text-gray-400 dark:text-slate-500 text-xs font-medium opacity-60 group-hover:opacity-100 transition">
                                         <button className="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1 transition-colors">
                                             ▲ {update.upvotes}
                                         </button>
@@ -186,7 +187,7 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
                 {activeTab === 'LEADERBOARD' && (
                     <div className="p-4 md:p-6 space-y-6">
                         {/* User Stats Card */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-900 dark:to-indigo-900 rounded-xl p-4 text-white shadow-lg relative overflow-hidden border border-transparent dark:border-white/10">
                              <div className="absolute right-0 top-0 text-6xl opacity-10">🏆</div>
                              <p className="text-xs font-medium opacity-80 mb-1">YOUR IMPACT</p>
                              <div className="flex justify-between items-end">
@@ -207,17 +208,17 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
 
                         {/* Top Contributors List */}
                         <div>
-                            <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">This Week's Heroes</h3>
+                            <h3 className="text-sm font-bold text-gray-500 dark:text-slate-500 uppercase tracking-wider mb-3">This Week's Heroes</h3>
                             <div className="space-y-3">
                                 {MOCK_LEADERBOARD.map((user, idx) => (
-                                    <div key={user.id} className="flex items-center gap-3 bg-white dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+                                    <div key={user.id} className="flex items-center gap-3 bg-white dark:bg-slate-800/50 p-3 rounded-xl border border-gray-100 dark:border-slate-800">
                                         <div className="font-bold text-gray-400 w-6 text-center text-sm">{idx + 1}</div>
-                                        <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-lg shadow-sm border border-gray-200 dark:border-gray-600">
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-lg shadow-sm border border-gray-200 dark:border-slate-600">
                                             {user.avatar}
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2">
-                                                <p className="font-bold text-gray-800 dark:text-gray-200 text-sm">{user.name}</p>
+                                                <p className="font-bold text-gray-800 dark:text-slate-200 text-sm">{user.name}</p>
                                                 {idx < 3 && <span className="text-xs">
                                                     {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
                                                 </span>}
@@ -247,13 +248,13 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
        {/* Report Modal */}
        {isAdding && (
            <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-               <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 border border-gray-200 dark:border-gray-800">
+               <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-10 border border-gray-200 dark:border-slate-800">
                    <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t.reportIssue}</h3>
-                        <button onClick={() => setIsAdding(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">✕</button>
+                        <button onClick={() => setIsAdding(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200">✕</button>
                    </div>
                    <textarea
-                    className="w-full bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-100 dark:border-gray-700 resize-none text-gray-900 dark:text-white placeholder-gray-400"
+                    className="w-full bg-gray-50 dark:bg-slate-800 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-100 dark:border-slate-700 resize-none text-gray-900 dark:text-white placeholder-gray-400"
                     rows={4}
                     placeholder="Describe the issue (e.g., 'Lift stuck on Platform 2')..."
                     value={newReportText}
@@ -264,7 +265,7 @@ const StationIntel: React.FC<StationIntelProps> = ({ language }) => {
                        <button 
                         onClick={handleAddReport}
                         disabled={isAnalyzing}
-                        className="flex-1 bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black rounded-xl py-3.5 font-bold text-sm disabled:bg-gray-400 dark:disabled:bg-gray-600 transition shadow-lg">
+                        className="flex-1 bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-slate-200 text-white dark:text-black rounded-xl py-3.5 font-bold text-sm disabled:bg-gray-400 dark:disabled:bg-slate-600 transition shadow-lg">
                            {isAnalyzing ? 'Analyzing...' : 'Submit (+50 Pts)'}
                        </button>
                    </div>

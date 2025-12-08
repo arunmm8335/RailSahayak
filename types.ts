@@ -16,6 +16,35 @@ export interface UserProfile {
   points: number;
 }
 
+export interface LiveTrainData {
+  trainName: string;
+  trainNo: string;
+  pnr: string;
+  currentStation: {
+    name: string;
+    code: string;
+    departureTime: string;
+    platform: string;
+  };
+  nextStation: {
+    name: string;
+    code: string;
+    arrivalTime: string;
+    distanceKm: number;
+    weather: string;
+  };
+  previousStation: {
+    name: string;
+    code: string;
+    departureTime: string;
+  };
+  coachPosition: string;
+  status: 'ON TIME' | 'DELAYED' | 'ARRIVED';
+  delayMinutes: number;
+  currentSpeed: number;
+  timestamp: number;
+}
+
 export interface StationUpdate {
   id: string;
   type: 'ISSUE' | 'INFO' | 'CROWD';
