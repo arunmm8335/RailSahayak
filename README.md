@@ -148,7 +148,7 @@ graph LR
 
 ---
 
-## 🔮 Future Roadmap
+## Future Roadmap
 
 - [ ] **PNR Sharing:** Auto-group passengers travelling on the same train.
 - [ ] **Offline Maps:** Download station layouts for offline navigation.
